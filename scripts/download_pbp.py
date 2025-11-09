@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download the last 25 NFL seasons of play-by-play data using nfl_data_py."""
+"""Download clutch NFL play-by-play data using nfl_data_py."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import datetime as dt
 import pathlib
 from typing import Iterable, List
 
+import pandas as pd
 from nfl_data_py import import_pbp_data
 
 
@@ -33,13 +34,14 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Download the last 25 seasons of NFL play-by-play data using nfl_data_py. "
-            "The resulting file contains all available columns from the library."
+            "Only clutch plays—defined as those within a one-score margin during the "
+            "final half of the fourth quarter or any overtime period—are retained."
         )
     )
     parser.add_argument(
         "--output",
         type=pathlib.Path,
-        default=pathlib.Path("data/pbp_last_25_seasons.parquet"),
+        default=pathlib.Path("data/pbp_last_25_seasons_clutch.parquet"),
         help=(
             "Path to write the downloaded data. The format is inferred from the file "
             "extension; supported extensions are .parquet and .csv. (default: %(default)s)"
@@ -59,6 +61,29 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+CLUTCH_SCORE_MARGIN = 7.5
+FOURTH_QUARTER = 4
+HALF_QUARTER_SECONDS = 450
+
+
+def filter_clutch_plays(pbp: pd.DataFrame) -> pd.DataFrame:
+    """Return only the plays that meet the "clutch" criteria."""
+
+    required_columns = {"score_differential", "qtr", "quarter_seconds_remaining"}
+    missing_columns = required_columns - set(pbp.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise KeyError(f"Play-by-play data is missing required columns: {missing}")
+
+    score_close = pbp["score_differential"].abs() <= CLUTCH_SCORE_MARGIN
+    last_half_fourth = (pbp["qtr"] == FOURTH_QUARTER) & (
+        pbp["quarter_seconds_remaining"] <= HALF_QUARTER_SECONDS
+    )
+    overtime = pbp["qtr"] >= FOURTH_QUARTER + 1
+    clutch_mask = score_close & (last_half_fourth | overtime)
+    return pbp.loc[clutch_mask].copy()
+
+
 def download_play_by_play(output_path: pathlib.Path, seasons: Iterable[int], *, use_cache: bool = True) -> None:
     """Download play-by-play data for the requested seasons and write it to disk."""
     seasons = list(seasons)
@@ -69,6 +94,9 @@ def download_play_by_play(output_path: pathlib.Path, seasons: Iterable[int], *, 
 
     pbp = import_pbp_data(seasons=seasons, downcast=False, cache=use_cache)
     print(f"Fetched {len(pbp):,} rows across {pbp['season'].nunique()} seasons")
+
+    pbp = filter_clutch_plays(pbp)
+    print(f"Filtered to {len(pbp):,} clutch plays")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if output_path.suffix.lower() == ".parquet":
