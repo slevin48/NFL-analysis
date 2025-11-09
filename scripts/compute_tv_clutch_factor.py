@@ -126,12 +126,17 @@ def compute_tv_clutch_factor(pbp: pd.DataFrame) -> pd.DataFrame:
 
 def save_leaderboard(df: pd.DataFrame, output_path: pathlib.Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    if output_path.suffix.lower() == ".parquet":
+    suffix = output_path.suffix.lower()
+    if suffix == ".parquet":
         df.to_parquet(output_path, index=False)
-    elif output_path.suffix.lower() == ".csv":
+    elif suffix == ".csv":
         df.to_csv(output_path, index=False)
+    elif suffix == ".json":
+        df.to_json(output_path, orient="records", indent=2)
     else:
-        raise ValueError("Unsupported output format. Use a .parquet or .csv extension.")
+        raise ValueError(
+            "Unsupported output format. Use a .parquet, .csv, or .json extension."
+        )
 
 
 def main(argv: Iterable[str] | None = None) -> None:

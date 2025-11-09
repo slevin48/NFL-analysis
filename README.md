@@ -48,3 +48,20 @@ and total yards. Completion percentage, yards per attempt, touchdown rate, and
 interception rate are combined through the traditional NFL passer rating formula.
 The resulting rating is scaled by `1 + log1p(clutch_attempts)` to account for volume,
 yielding the **TV Clutch Factor**. Scores are then ranked from highest to lowest.
+
+### Power the dashboard
+
+To power the interactive HTML dashboard, write the leaderboard to JSON alongside
+any other formats you need:
+
+```bash
+python scripts/compute_tv_clutch_factor.py --input data/pbp_last_25_seasons_clutch.parquet \
+    --output data/tv_clutch_leaderboard.json
+```
+
+The script now accepts `.json` outputs in addition to `.parquet` and `.csv`.
+
+Open `index.html` in your browser (or serve the repository root via
+`python -m http.server`) to explore a TV-style presentation of the leaderboard.
+The page automatically loads `data/tv_clutch_leaderboard.json`, highlights the top
+performers, and lets you sort any column on demand.
