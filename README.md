@@ -31,3 +31,20 @@ python scripts/download_pbp.py --output data/pbp.csv --span 25
 ```
 
 Set `--no-cache` if you would like to bypass the local nflverse cache when downloading.
+
+## Compute the TV Clutch Factor Leaderboard
+
+Once the clutch dataset has been generated, aggregate quarterback performance into a
+TV Clutch Factor score:
+
+```bash
+python scripts/compute_tv_clutch_factor.py --input data/pbp_last_25_seasons_clutch.parquet \
+    --output data/tv_clutch_factor.parquet --top 15
+```
+
+The script expects the clutch dataset created by `download_pbp.py`. It computes, for
+each quarterback, clutch passing attempts, completions, touchdowns, interceptions,
+and total yards. Completion percentage, yards per attempt, touchdown rate, and
+interception rate are combined through the traditional NFL passer rating formula.
+The resulting rating is scaled by `1 + log1p(clutch_attempts)` to account for volume,
+yielding the **TV Clutch Factor**. Scores are then ranked from highest to lowest.

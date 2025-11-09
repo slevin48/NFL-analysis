@@ -1,3 +1,4 @@
 nfl_data_py>=0.3.1
 pandas>=1.5
+numpy>=1.23
 pyarrow>=12  # required for writing parquet files
