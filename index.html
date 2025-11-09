@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TV Clutch Factor Leaderboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: radial-gradient(circle at top left, #1d3557, #030712 55%);
+        --accent: #f1c40f;
+        --accent-soft: rgba(241, 196, 15, 0.14);
+        --card-bg: rgba(15, 23, 42, 0.72);
+        --text: #f8fafc;
+        --muted: #9ca3af;
+        --border: rgba(148, 163, 184, 0.24);
+        --podium-gold: linear-gradient(135deg, #f59e0b, #facc15);
+        --podium-silver: linear-gradient(135deg, #94a3b8, #cbd5f5);
+        --podium-bronze: linear-gradient(135deg, #92400e, #f59e0b);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 3.5rem 5vw 2rem;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        letter-spacing: -0.02em;
+        margin: 0 0 1rem;
+      }
+
+      header p {
+        max-width: 720px;
+        margin: 0 auto;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .hero-badges {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 0.35rem 0.9rem;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.66);
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      main {
+        flex: 1;
+        padding: 0 5vw 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+      }
+
+      section {
+        border-radius: 28px;
+        padding: 2.5rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        box-shadow: 0 25px 60px rgba(2, 6, 23, 0.35);
+        backdrop-filter: blur(24px);
+      }
+
+      .summary-grid {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .summary-card {
+        border-radius: 20px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .summary-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(241, 196, 15, 0.25), transparent 55%);
+        pointer-events: none;
+      }
+
+      .summary-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .summary-value {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      .summary-meta {
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      .leaderboard-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .leaderboard-header h2 {
+        font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+        margin: 0;
+      }
+
+      .leaderboard-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted);
+      }
+
+      .instructions {
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+
+      .instructions code {
+        font-family: "Roboto Mono", monospace;
+        font-size: 0.85rem;
+        background: rgba(148, 163, 184, 0.12);
+        padding: 0.25rem 0.4rem;
+        border-radius: 6px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 18px;
+        background: rgba(2, 6, 23, 0.7);
+      }
+
+      thead {
+        background: rgba(15, 23, 42, 0.95);
+      }
+
+      th,
+      td {
+        padding: 0.85rem 1rem;
+        text-align: left;
+        font-size: 0.95rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      th {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.8rem;
+        color: var(--muted);
+        position: relative;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      th.sortable::after {
+        content: "⇅";
+        font-size: 0.75rem;
+        margin-left: 0.4rem;
+        color: rgba(148, 163, 184, 0.35);
+      }
+
+      tr:nth-child(even) td {
+        background: rgba(148, 163, 184, 0.05);
+      }
+
+      tr:hover td {
+        background: rgba(241, 196, 15, 0.08);
+      }
+
+      tbody tr.podium-1 td:first-child {
+        background: var(--podium-gold);
+        color: #0f172a;
+        font-weight: 700;
+      }
+
+      tbody tr.podium-2 td:first-child {
+        background: var(--podium-silver);
+        color: #0f172a;
+        font-weight: 700;
+      }
+
+      tbody tr.podium-3 td:first-child {
+        background: var(--podium-bronze);
+        color: #0f172a;
+        font-weight: 700;
+      }
+
+      .attempts-bar {
+        position: relative;
+        padding-right: 0;
+      }
+
+      .attempts-bar span {
+        position: relative;
+        z-index: 1;
+      }
+
+      .attempts-bar::before {
+        content: "";
+        position: absolute;
+        inset: 30% 0 30% auto;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(241, 196, 15, 0.6), rgba(241, 196, 15, 0.05));
+        width: calc(var(--percent) * 1%);
+        min-width: 12%;
+        max-width: 100%;
+        opacity: 0.9;
+      }
+
+      .status {
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      footer {
+        text-align: center;
+        padding: 2rem 5vw 3rem;
+        color: rgba(148, 163, 184, 0.6);
+        font-size: 0.85rem;
+      }
+
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 768px) {
+        section {
+          padding: 1.8rem;
+        }
+
+        th,
+        td {
+          font-size: 0.9rem;
+        }
+
+        header {
+          padding-top: 2.75rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>TV Clutch Factor Leaderboard</h1>
+      <p>
+        Dive into the most pressure-packed moments of the past 25 NFL seasons.
+        This dashboard showcases how quarterbacks performed when the game was
+        on the line — late in the fourth quarter or overtime with the margin
+        within one score. Explore clutch attempts, efficiency, and the custom
+        TV Clutch Factor metric to identify who delivered when it mattered most.
+      </p>
+      <div class="hero-badges">
+        <span class="badge">Clutch Situations Only</span>
+        <span class="badge">Passer Rating Inspired</span>
+        <span class="badge">25 Season Archive</span>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="summary-title">
+        <div class="leaderboard-header">
+          <h2 id="summary-title">Highlights at a Glance</h2>
+          <p class="instructions">
+            Run
+            <code
+              >python scripts/compute_tv_clutch_factor.py --output
+              data/tv_clutch_leaderboard.json</code
+            >
+            after downloading clutch plays to refresh the data powering this
+            dashboard.
+          </p>
+        </div>
+        <div class="summary-grid" id="summary-cards">
+          <article class="summary-card">
+            <span class="summary-label">Clutch leader</span>
+            <span class="summary-value" id="leader-name">—</span>
+            <span class="summary-meta" id="leader-score">Awaiting data…</span>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Elite efficiency</span>
+            <span class="summary-value" id="top-rating">—</span>
+            <span class="summary-meta" id="top-rating-meta">Awaiting data…</span>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Clutch attempts logged</span>
+            <span class="summary-value" id="total-attempts">—</span>
+            <span class="summary-meta" id="attempts-meta">Awaiting data…</span>
+          </article>
+          <article class="summary-card">
+            <span class="summary-label">Quarterbacks tracked</span>
+            <span class="summary-value" id="qb-count">—</span>
+            <span class="summary-meta" id="qb-meta">Awaiting data…</span>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="leaderboard-title">
+        <div class="leaderboard-header">
+          <h2 id="leaderboard-title">Full Quarterback Leaderboard</h2>
+          <div class="leaderboard-actions">
+            <div class="instructions">
+              Click column headers to sort. Metrics are already ordered by TV
+              Clutch Factor from highest to lowest.
+            </div>
+            <div class="instructions">
+              Data source:
+              <a href="https://github.com/nflverse/nflfastR-data" target="_blank" rel="noreferrer"
+                >nflfastR play-by-play</a
+              >
+              via <code>nfl_data_py</code>.
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table aria-describedby="status">
+            <thead>
+              <tr>
+                <th scope="col" class="sortable" data-key="rank">Rank</th>
+                <th scope="col" class="sortable" data-key="passer_player_name">Quarterback</th>
+                <th scope="col" class="sortable" data-key="clutch_attempts">Attempts</th>
+                <th scope="col" class="sortable" data-key="completions">Completions</th>
+                <th scope="col" class="sortable" data-key="completion_pct">Comp %</th>
+                <th scope="col" class="sortable" data-key="yards_gained">Yards</th>
+                <th scope="col" class="sortable" data-key="touchdowns">TD</th>
+                <th scope="col" class="sortable" data-key="interceptions">INT</th>
+                <th scope="col" class="sortable" data-key="passer_rating">Passer Rating</th>
+                <th scope="col" class="sortable" data-key="tv_clutch_factor">TV Clutch Factor</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+          </table>
+          <p class="status" id="status">Loading clutch leaderboard…</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Crafted for data storytelling — open source and ready for your next
+      analytics broadcast.
+    </footer>
+
+    <script>
+      const DATA_URL = "data/tv_clutch_leaderboard.json";
+      const statusEl = document.getElementById("status");
+      const bodyEl = document.getElementById("leaderboard-body");
+      const leaderNameEl = document.getElementById("leader-name");
+      const leaderScoreEl = document.getElementById("leader-score");
+      const topRatingEl = document.getElementById("top-rating");
+      const topRatingMetaEl = document.getElementById("top-rating-meta");
+      const totalAttemptsEl = document.getElementById("total-attempts");
+      const attemptsMetaEl = document.getElementById("attempts-meta");
+      const qbCountEl = document.getElementById("qb-count");
+      const qbMetaEl = document.getElementById("qb-meta");
+
+      let currentSort = { key: "tv_clutch_factor", direction: "desc" };
+      let cachedData = [];
+      let maxAttempts = 0;
+
+      function formatNumber(value, options = {}) {
+        return Number(value).toLocaleString(undefined, options);
+      }
+
+      function formatPct(value) {
+        if (value === null || value === undefined) return "—";
+        return `${Number(value).toFixed(1)}%`;
+      }
+
+      function formatScore(value) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) {
+          return "—";
+        }
+        return Number(value).toFixed(2);
+      }
+
+      function renderTable(data) {
+        bodyEl.innerHTML = "";
+        maxAttempts = Math.max(...data.map((row) => Number(row.clutch_attempts) || 0), 1);
+
+        data.forEach((row, index) => {
+          const tr = document.createElement("tr");
+          const rank = index + 1;
+          if (rank <= 3) {
+            tr.classList.add(`podium-${rank}`);
+          }
+
+          const attemptsPercent = Math.max(
+            12,
+            Math.round(((Number(row.clutch_attempts) || 0) / maxAttempts) * 100)
+          );
+
+          tr.innerHTML = `
+            <td>${rank}</td>
+            <td>${row.passer_player_name || "Unknown"}</td>
+            <td class="attempts-bar" style="--percent: ${attemptsPercent}"><span>${formatNumber(
+            row.clutch_attempts
+          )}</span></td>
+            <td>${formatNumber(row.completions)}</td>
+            <td>${formatPct(row.completion_pct)}</td>
+            <td>${formatNumber(row.yards_gained)}</td>
+            <td>${formatNumber(row.touchdowns)}</td>
+            <td>${formatNumber(row.interceptions)}</td>
+            <td>${formatScore(row.passer_rating)}</td>
+            <td>${formatScore(row.tv_clutch_factor)}</td>
+          `;
+          bodyEl.appendChild(tr);
+        });
+      }
+
+      function updateSummary(data) {
+        if (!data.length) {
+          leaderNameEl.textContent = "No data";
+          leaderScoreEl.textContent = "Run the computation script to populate the leaderboard.";
+          return;
+        }
+        const leader = data[0];
+        const topRating = data.reduce((best, qb) =>
+          Number(qb.passer_rating) > Number(best.passer_rating || 0) ? qb : best
+        , { passer_rating: -Infinity });
+
+        const totalAttempts = data.reduce(
+          (sum, qb) => sum + (Number(qb.clutch_attempts) || 0),
+          0
+        );
+
+        leaderNameEl.textContent = leader.passer_player_name || "Unknown";
+        leaderScoreEl.textContent = `TV Clutch Factor ${formatScore(leader.tv_clutch_factor)}`;
+
+        topRatingEl.textContent = formatScore(topRating.passer_rating);
+        topRatingMetaEl.textContent = `${topRating.passer_player_name || "Unknown"} posted the best clutch passer rating.`;
+
+        totalAttemptsEl.textContent = formatNumber(totalAttempts);
+        attemptsMetaEl.textContent = `Across ${data.length} quarterbacks in do-or-die situations.`;
+
+        qbCountEl.textContent = formatNumber(data.length);
+        qbMetaEl.textContent = `Includes passers with at least one clutch attempt.`;
+      }
+
+      function sortData(key) {
+        if (currentSort.key === key) {
+          currentSort.direction = currentSort.direction === "asc" ? "desc" : "asc";
+        } else {
+          currentSort = { key, direction: "desc" };
+        }
+
+        const sorted = [...cachedData].sort((a, b) => {
+          const aVal = a[key];
+          const bVal = b[key];
+
+          if (typeof aVal === "string" || typeof bVal === "string") {
+            return currentSort.direction === "asc"
+              ? String(aVal).localeCompare(String(bVal))
+              : String(bVal).localeCompare(String(aVal));
+          }
+
+          return currentSort.direction === "asc"
+            ? Number(aVal) - Number(bVal)
+            : Number(bVal) - Number(aVal);
+        });
+
+        renderTable(sorted);
+        updateSummary(sorted);
+      }
+
+      async function fetchLeaderboard() {
+        try {
+          const response = await fetch(DATA_URL, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          const rawData = await response.json();
+          if (!Array.isArray(rawData)) {
+            throw new Error("Unexpected data format");
+          }
+
+          cachedData = rawData
+            .map((row) => ({
+              ...row,
+              completion_pct: Number(row.completion_pct),
+              passer_rating: Number(row.passer_rating),
+              tv_clutch_factor: Number(row.tv_clutch_factor),
+            }))
+            .sort((a, b) => Number(b.tv_clutch_factor) - Number(a.tv_clutch_factor));
+
+          renderTable(cachedData);
+          updateSummary(cachedData);
+          statusEl.textContent = `Loaded ${cachedData.length} quarterbacks.`;
+        } catch (error) {
+          console.error(error);
+          statusEl.textContent =
+            "Unable to load data. Confirm that data/tv_clutch_leaderboard.json exists by running the compute script.";
+        }
+      }
+
+      document.querySelectorAll("th.sortable").forEach((th) => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.key;
+          sortData(key);
+        });
+      });
+
+      fetchLeaderboard();
+    </script>
+  </body>
+</html>
