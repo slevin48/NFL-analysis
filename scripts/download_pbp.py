@@ -92,7 +92,10 @@ def download_play_by_play(output_path: pathlib.Path, seasons: Iterable[int], *, 
 
     print(f"Requesting play-by-play data for seasons: {seasons[0]}-{seasons[-1]}")
 
-    pbp = import_pbp_data(seasons=seasons, downcast=False, cache=use_cache)
+    # nfl_data_py>=0.3.3 renamed the ``seasons`` argument to ``years``.
+    # Using the keyword keeps compatibility with the current versions while
+    # still accepting the same list that determine_seasons returns.
+    pbp = import_pbp_data(years=seasons, downcast=False, cache=use_cache)
     print(f"Fetched {len(pbp):,} rows across {pbp['season'].nunique()} seasons")
 
     pbp = filter_clutch_plays(pbp)
